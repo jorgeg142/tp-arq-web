@@ -28,8 +28,8 @@
         <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('conceptos.index') }}">🎯 Conceptos de Puntos</a>
         <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('reglas.index') }}">⚙️ Reglas de Asignación</a>
         <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('vencimientos.index') }}">📅 Vencimientos</a>
-        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="#">💰 Bolsa de Puntos</a>
-        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="#">🎟️ Uso de Puntos</a>
+        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('bolsas.index') }}">💰 Bolsa de Puntos</a>
+        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('usos.index') }}">🎟️ Uso de Puntos</a>
       </nav>
 
       <div class="mt-auto border-t border-slate-700 px-5 py-4 flex items-center justify-between text-sm">
