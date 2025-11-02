@@ -1,5 +1,5 @@
 @php
-   $c 
+   // $c (edición) puede venir o no (creación)
 @endphp
 
 <div class="grid md:grid-cols-2 gap-4">
