@@ -23,7 +23,7 @@
       <a href="{{ url('/') }}" class="font-bold">Fideliza<span class="text-indigo-600">Pro</span></a>
       <nav class="flex items-center gap-2">
         <a href="{{ route('dashboard') }}" class="px-3 py-1.5 rounded hover:bg-slate-100 text-sm">Iniciar sesión</a>
-        <a href="" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm hover:bg-indigo-700">Crear cuenta</a>
+        <a href="" class="px-3 py-1.5 rounded bg-indigo-600 text-white text-sm hover:bg-indigo-700">Crear cuentaa</a>
       </nav>
     </div>
   </header>
