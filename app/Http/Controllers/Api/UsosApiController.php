@@ -1,37 +1,39 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use App\Services\UsosService;
 
-class UsosController extends Controller
+class UsosApiController extends Controller
 {
     public function __construct(private UsosService $service) {}
 
+    // GET /api/usos
     public function index(Request $request)
     {
         $q       = trim($request->get('q',''));
         $estado  = $request->get('estado'); // COMPLETADO|PENDIENTE|null
         $perPage = (int) $request->get('per_page', 10) ?: 10;
 
-        $rows = $this->service->listar($q, $estado, $perPage)->appends($request->query());
+        $rows = $this->service->listar($q, $estado, $perPage);
         $kpis = $this->service->kpis();
 
-        return view('usos.index', [
-            'rows'          => $rows,
-            'q'             => $q,
-            'estado'        => $estado,
-            'perPage'       => $perPage,
-        ] + $kpis);
+        return response()->json([
+            'data' => $rows->items(),
+            'meta' => [
+                'current_page' => $rows->currentPage(),
+                'per_page'     => $rows->perPage(),
+                'total'        => $rows->total(),
+                'last_page'    => $rows->lastPage(),
+            ],
+            'kpis' => $kpis,
+        ]);
     }
 
-    public function create()
-    {
-        return view('usos.create', $this->service->datosCreate());
-    }
-
+    // POST /api/usos
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -43,26 +45,23 @@ class UsosController extends Controller
         ]);
 
         try {
-            $this->service->crearCanje($data);
+            $id = $this->service->crearCanje($data);
+            $payload = $this->service->obtenerCabeceraYDetalle($id);
+            return response()->json(['ok'=>true,'id'=>$id,'canje'=>$payload], 201);
         } catch (\InvalidArgumentException|\RuntimeException $e) {
-            return back()->withErrors(['puntos'=>$e->getMessage()])->withInput();
+            return response()->json(['ok'=>false,'error'=>$e->getMessage()], 422);
         } catch (QueryException $e) {
-            return back()->withErrors(['db'=>$e->getMessage()])->withInput();
+            return response()->json(['ok'=>false,'error'=>$e->getMessage()], 422);
         }
-
-        return redirect()->route('usos.index')->with('ok','Canje procesado correctamente.');
     }
 
+    // GET /api/usos/{id}
     public function show(int $id)
     {
         return response()->json($this->service->obtenerCabeceraYDetalle($id));
     }
 
-    public function edit(int $id)
-    {
-        return view('usos.edit', $this->service->editarDatos($id));
-    }
-
+    // PUT /api/usos/{id}
     public function update(Request $request, int $id)
     {
         $data = $request->validate([
@@ -71,17 +70,26 @@ class UsosController extends Controller
         ]);
 
         $this->service->actualizar($id, $data);
-        return redirect()->route('usos.index')->with('ok','Canje actualizado.');
+        return response()->json(['ok'=>true]);
     }
 
+    // DELETE /api/usos/{id}
     public function destroy(int $id)
     {
         try {
             $this->service->eliminar($id);
+            return response()->json(['ok'=>true]);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['del'=>$e->getMessage()]);
+            return response()->json(['ok'=>false,'error'=>$e->getMessage()], 422);
         }
+    }
 
-        return back()->with('ok','Canje eliminado.');
+    // GET /api/usos/saldo/{clienteId}
+    public function saldoCliente(int $clienteId)
+    {
+        return response()->json([
+            'cliente_id' => $clienteId,
+            'saldo' => $this->service->saldoDisponible($clienteId),
+        ]);
     }
 }
