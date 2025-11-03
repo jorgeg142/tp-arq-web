@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use App\Services\ClientesService;
 
 class ClientesController extends Controller
@@ -64,5 +64,44 @@ class ClientesController extends Controller
     {
         $this->svc->eliminar($id);
         return redirect()->route('clientes.index')->with('ok','Cliente eliminado.');
+    }
+
+    private function validated(Request $request, ?int $id = null): array
+    {
+        $data = $request->validate([
+            'nombre'            => ['required','string','max:120'],
+            'apellido'          => ['nullable','string','max:120'],
+
+            // Ajustá si "numero_documento" NO es único en tu tabla
+            'numero_documento'  => [
+                'required','string','max:50',
+                Rule::unique('clientes','numero_documento')->ignore($id),
+            ],
+
+            // Si tenés catálogo de tipos, podés usar Rule::in(['CI','RUC','PAS'])
+            'tipo_documento'    => ['nullable','string','max:20'],
+
+            'nacionalidad'      => ['nullable','string','max:80'],
+
+            // Quitá el unique si tu columna email no es única
+            'email'             => [
+                'nullable','email','max:255',
+                Rule::unique('clientes','email')->ignore($id),
+            ],
+
+            'telefono'          => ['nullable','string','max:50'],
+
+            // Si el input viene como YYYY-MM-DD dejá 'date'; si viene DD/MM/YYYY, cambiá a 'date_format:d/m/Y'
+            'fecha_nacimiento'  => ['nullable','date'], // o: ['nullable','date_format:Y-m-d']
+            // 'activo' se maneja fuera con $request->boolean('activo')
+        ]);
+
+        // Normalizaciones útiles
+        // Si te llega '' en lugar de null para fecha, lo convertimos a null:
+        if (array_key_exists('fecha_nacimiento', $data) && $data['fecha_nacimiento'] === '') {
+            $data['fecha_nacimiento'] = null;
+        }
+
+        return $data;
     }
 }
