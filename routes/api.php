@@ -33,9 +33,6 @@ Route::prefix('reglas')->group(function () {
     Route::get('{id}',       [ReglasAsignacionApiController::class, 'show']);
     Route::put('{id}',       [ReglasAsignacionApiController::class, 'update']);
     Route::delete('{id}',    [ReglasAsignacionApiController::class, 'destroy']);
-
-    // utilitario para validar solapamientos desde el front
-    Route::get('overlaps/check', [ReglasAsignacionApiController::class, 'overlaps']);
 });
 
 Route::get('dashboard', [DashboardApiController::class, 'summary']);

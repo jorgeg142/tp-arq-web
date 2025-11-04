@@ -147,36 +147,40 @@ class BolsasService
     // ---------- Crear / Actualizar / Eliminar ----------
     public function crear(array $v): int
     {
-        // auto_por_monto: usar función de la DB
-        if (!empty($v['auto_por_monto'])) {
-            $pts = DB::table(DB::raw('DUAL'))
-                ->selectRaw('fn_calcular_puntos(?) as pts', [$v['monto_operacion'] ?? 0])
-                ->value('pts');
-            $v['puntaje_asignado'] = (int) $pts;
-        }
+        // 1) Calcular puntos asignados por reglas (siempre)
+        $pts = DB::table(DB::raw('DUAL'))
+        ->selectRaw('fn_calcular_puntos(?) AS pts', [$v['monto_operacion'] ?? 0])
+        ->value('pts');
 
-        $v['puntaje_utilizado'] = (int)($v['puntaje_utilizado'] ?? 0);
-        $v['saldo_puntos']      = $v['saldo_puntos'] ?? max(0, ($v['puntaje_asignado'] - $v['puntaje_utilizado']));
+        $asignados  = (int)($pts ?? 0);
+        $utilizado  = 0;                                  // <- fijo al crear
+        $saldo      = max(0, $asignados - $utilizado);
 
+        // 3) Caducidad automática si hay parámetro
         if (empty($v['fecha_caducidad']) && !empty($v['param_vencimiento_id'])) {
             $dias = DB::table('param_vencimientos')->where('id',$v['param_vencimiento_id'])->value('dias_duracion');
             if (!is_null($dias)) {
-                $v['fecha_caducidad'] = Carbon::parse($v['fecha_asignacion'])->addDays($dias)->toDateString();
+                $v['fecha_caducidad'] = \Carbon\Carbon::parse($v['fecha_asignacion'])->addDays($dias)->toDateString();
             }
         }
 
+        // (opcional) bloquear asignaciones sin puntos
+        // if ($v['puntaje_asignado'] <= 0) throw new \RuntimeException('No corresponde asignar puntos para ese monto.');
+
         return (int) DB::table('bolsas_puntos')->insertGetId([
-            'cliente_id'          => $v['cliente_id'],
-            'fecha_asignacion'    => $v['fecha_asignacion'],
-            'fecha_caducidad'     => $v['fecha_caducidad'] ?? null,
-            'puntaje_asignado'    => $v['puntaje_asignado'],
-            'puntaje_utilizado'   => $v['puntaje_utilizado'],
-            'saldo_puntos'        => $v['saldo_puntos'],
-            'monto_operacion'     => $v['monto_operacion'] ?? 0,
-            'origen'              => $v['origen'] ?? null,
-            'param_vencimiento_id'=> $v['param_vencimiento_id'] ?? null,
+        'cliente_id'           => $v['cliente_id'],
+        'fecha_asignacion'     => $v['fecha_asignacion'],
+        'fecha_caducidad'      => $v['fecha_caducidad'] ?? null,
+        'puntaje_asignado'     => $asignados,
+        'puntaje_utilizado'    => $utilizado,          // <- siempre 0
+        'saldo_puntos'         => $saldo,              // <- derivado
+        'monto_operacion'      => $v['monto_operacion'] ?? 0,
+        'origen'               => $v['origen'] ?? null,
+        'param_vencimiento_id' => $v['param_vencimiento_id'] ?? null,
         ]);
     }
+
+
 
     public function actualizar(int $id, array $v): void
     {
@@ -191,9 +195,6 @@ class BolsasService
             'cliente_id'          => $v['cliente_id'],
             'fecha_asignacion'    => $v['fecha_asignacion'],
             'fecha_caducidad'     => $v['fecha_caducidad'] ?? null,
-            'puntaje_asignado'    => $v['puntaje_asignado'],
-            'puntaje_utilizado'   => $v['puntaje_utilizado'],
-            'saldo_puntos'        => $v['saldo_puntos'],
             'monto_operacion'     => $v['monto_operacion'] ?? 0,
             'origen'              => $v['origen'] ?? null,
             'param_vencimiento_id'=> $v['param_vencimiento_id'] ?? null,

@@ -91,19 +91,6 @@ class ReglasAsignacionApiController extends Controller
         return response()->json(['ok'=>true]);
     }
 
-    // GET /api/reglas/overlaps?low=...&high=...&ignore_id=...
-    public function overlaps(Request $request)
-    {
-        $low       = (float) $request->query('low');
-        $highParam = $request->query('high'); // puede venir null
-        $ignoreId  = $request->query('ignore_id') ? (int) $request->query('ignore_id') : null;
-
-        $high = ($highParam === null || $highParam === '') ? null : (float) $highParam;
-
-        $solapa = $this->service->overlaps($ignoreId, $low, $high);
-        return response()->json(['overlaps' => $solapa]);
-    }
-
     private function validateData(Request $request): array
     {
         $data = $request->validate([
@@ -111,7 +98,6 @@ class ReglasAsignacionApiController extends Controller
             'limite_superior'    => ['nullable','numeric','gt:limite_inferior'],
             'monto_equivalencia' => ['required','numeric','gt:0'],
             'descripcion'        => ['nullable','string','max:200'],
-            'prioridad'          => ['required','integer','min:1','max:100'],
             'activo'             => ['nullable'],
         ]);
 

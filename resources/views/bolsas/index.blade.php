@@ -70,7 +70,17 @@
         ＋ Nueva Bolsa
       </a>
     </form>
+      @if (session('ok'))
+        <div class="alert alert-success">{{ session('ok') }}</div>
+      @endif
 
+      @if ($errors->any())
+        <div class="alert alert-danger">
+          @foreach ($errors->all() as $e)
+            <div>{{ $e }}</div>
+          @endforeach
+        </div>
+      @endif
     {{-- Tabla --}}
     <div class="bg-white rounded-xl shadow overflow-hidden">
       <div class="overflow-x-auto">
@@ -138,10 +148,6 @@
                       <button class="p-1.5 rounded border hover:bg-rose-50" title="Eliminar">🗑️</button>
                     </form>
                   </td>
-
-                  {{-- ojo -> usa /detalle --}}
-                  <button class="p-1.5 rounded border hover:bg-slate-50 btn-ver-bolsa"
-                          data-url="{{ route('bolsas.show', $r->id) }}" title="Ver">👁️</button>
                 </td>
               </tr>
             @empty

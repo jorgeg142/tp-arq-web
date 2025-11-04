@@ -95,7 +95,7 @@ class UsosService
                 DB::statement('CALL sp_usar_puntos_fifo(?,?,?)', [
                     $data['cliente_id'],
                     $puntos,
-                    $data['modo']==='concepto' ? $data['concepto_uso_id'] : 0
+                    $data['modo']==='concepto' ? $data['concepto_uso_id'] : null
                 ]);
             } catch (QueryException $e) {
                 // re-lanzamos, lo atrapará el caller

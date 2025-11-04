@@ -59,25 +59,6 @@
       </div>
 
       <div>
-        <label class="block text-sm text-gray-600">Puntos Asignados *</label>
-        <input type="number" min="0" name="puntaje_asignado" value="{{ old('puntaje_asignado',$row->puntaje_asignado) }}"
-               class="w-full border rounded px-3 py-2" required>
-      </div>
-
-      <div>
-        <label class="block text-sm text-gray-600">Puntos Utilizados *</label>
-        <input type="number" min="0" name="puntaje_utilizado" value="{{ old('puntaje_utilizado',$row->puntaje_utilizado) }}"
-               class="w-full border rounded px-3 py-2" required>
-      </div>
-
-      <div>
-        <label class="block text-sm text-gray-600">Saldo Puntos *</label>
-        <input type="number" min="0" name="saldo_puntos" value="{{ old('saldo_puntos',$row->saldo_puntos) }}"
-               class="w-full border rounded px-3 py-2" required>
-        <p class="text-xs text-slate-500 mt-1">Debe cumplir: Asignado = Utilizado + Saldo.</p>
-      </div>
-
-      <div>
         <label class="block text-sm text-gray-600">Origen</label>
         <input type="text" name="origen" value="{{ old('origen',$row->origen) }}" class="w-full border rounded px-3 py-2" maxlength="100">
       </div>

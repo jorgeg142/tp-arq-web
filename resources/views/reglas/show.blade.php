@@ -9,7 +9,6 @@
       <div><dt class="text-xs text-gray-500">Descripción</dt><dd class="text-gray-800">{{ $r->descripcion ?: '—' }}</dd></div>
       <div><dt class="text-xs text-gray-500">Rango</dt><dd class="text-gray-800">{{ $r->rango }}</dd></div>
       <div><dt class="text-xs text-gray-500">Equivalencia</dt><dd class="text-gray-800">{{ $r->eq_text }}</dd></div>
-      <div><dt class="text-xs text-gray-500">Prioridad</dt><dd class="text-gray-800">{{ $r->prioridad }}</dd></div>
       <div><dt class="text-xs text-gray-500">Estado</dt><dd class="text-gray-800">{{ $r->activo ? 'Activo' : 'Inactivo' }}</dd></div>
     </dl>
 

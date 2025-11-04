@@ -57,30 +57,9 @@
                class="w-full border rounded px-3 py-2">
       </div>
 
-      <div class="flex items-center gap-2">
-        <input type="checkbox" name="auto_por_monto" value="1" {{ old('auto_por_monto')?'checked':'' }}>
-        <span class="text-sm text-gray-600">Calcular puntos con reglas (fn_calcular_puntos)</span>
+      <div class="text-sm text-slate-600">
+        Los puntos asignados se calculan automáticamente con las reglas vigentes según el <b>Monto Operación</b>.
       </div>
-
-      <div>
-        <label class="block text-sm text-gray-600">Puntos Asignados *</label>
-        <input type="number" min="0" name="puntaje_asignado" value="{{ old('puntaje_asignado') }}"
-               class="w-full border rounded px-3 py-2" required>
-      </div>
-
-      <div>
-        <label class="block text-sm text-gray-600">Puntos Utilizados</label>
-        <input type="number" min="0" name="puntaje_utilizado" value="{{ old('puntaje_utilizado',0) }}"
-               class="w-full border rounded px-3 py-2">
-      </div>
-
-      <div>
-        <label class="block text-sm text-gray-600">Saldo Puntos</label>
-        <input type="number" min="0" name="saldo_puntos" value="{{ old('saldo_puntos') }}"
-               class="w-full border rounded px-3 py-2">
-        <p class="text-xs text-slate-500 mt-1">Si se deja vacío, se calculará como Asignado - Utilizado.</p>
-      </div>
-
       <div>
         <label class="block text-sm text-gray-600">Origen</label>
         <input type="text" name="origen" value="{{ old('origen') }}" class="w-full border rounded px-3 py-2" maxlength="100">

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ReglasAsignacionService
 {
@@ -11,7 +12,6 @@ class ReglasAsignacionService
     public function listar(?int $perPage = null)
     {
         $rules = DB::table('reglas_asignacion')
-            ->orderBy('prioridad')
             ->orderBy('limite_inferior');
 
         if ($perPage && $perPage > 0) {
@@ -40,36 +40,89 @@ class ReglasAsignacionService
 
     // ------------------- Escritura -------------------
 
-    public function crear(array $data): int
+     public function assertNoOverlap(array $data, ?int $ignoreId = null): void
     {
-        if (($data['activo'] ?? 0) == 1 && $this->overlaps(null, $data['limite_inferior'], $data['limite_superior'])) {
-            throw new \RuntimeException('El rango se solapa con otra regla activa.');
+        $li = (float)$data['limite_inferior'];
+        $ls = isset($data['limite_superior']) && $data['limite_superior'] !== '' ? (float)$data['limite_superior'] : null;
+
+        // Validación básica de bordes
+        if (!is_null($ls) && $ls < $li) {
+            throw ValidationException::withMessages([
+                'limite_superior' => 'El límite superior debe ser mayor o igual al inferior.',
+            ]);
         }
 
+        // Si la nueva/actualizada es global (ls = NULL): solo puede existir UNA global
+        if (is_null($ls)) {
+            $q = DB::table('reglas_asignacion')
+                ->when($ignoreId, fn($x) => $x->where('id', '!=', $ignoreId))
+                ->whereNull('limite_superior');
+
+            if ($q->exists()) {
+                throw ValidationException::withMessages([
+                    'limite_superior' => 'Ya existe una regla global. Solo se permite una.',
+                ]);
+            }
+            return; // global nunca “se solapa” con específicas según nuestro criterio
+        }
+
+        // Chequear superposición con otras ESPECÍFICAS
+        $overlap = DB::table('reglas_asignacion')
+            ->when($ignoreId, fn($x) => $x->where('id', '!=', $ignoreId))
+            ->whereNotNull('limite_superior')
+            ->where(function ($q) use ($li, $ls) {
+                // Solapadas si: li <= ls_existente  AND  li_existente <= ls
+                $q->where(function ($qq) use ($li, $ls) {
+                    $qq->where('limite_inferior', '<=', $ls)
+                       ->where('limite_superior', '>=', $li);
+                });
+            })
+            ->exists();
+
+        if ($overlap) {
+            throw ValidationException::withMessages([
+                'limite_inferior' => 'El rango se superpone con otra regla existente.',
+                'limite_superior' => 'El rango se superpone con otra regla existente.',
+            ]);
+        }
+    }
+
+    public function crear(array $data): int
+    {
+        $this->assertNoOverlap($data, null);
+
         return (int) DB::table('reglas_asignacion')->insertGetId([
-            'limite_inferior'    => $data['limite_inferior'],
-            'limite_superior'    => $data['limite_superior'],
-            'monto_equivalencia' => $data['monto_equivalencia'],
             'descripcion'        => $data['descripcion'] ?? null,
-            'prioridad'          => $data['prioridad'],
-            'activo'             => $data['activo'] ?? 0,
+            'limite_inferior'    => $data['limite_inferior'],
+            'limite_superior'    => $data['limite_superior'] !== '' ? $data['limite_superior'] : null,
+            'monto_equivalencia' => $data['monto_equivalencia'],
+            'activo'             => !empty($data['activo']) ? 1 : 0,
+            // 'prioridad'        => eliminado: ya no se usa
+            'created_at'         => now(),
+            'updated_at'         => now(),
         ]);
     }
 
     public function actualizar(int $id, array $data): void
     {
-        if (($data['activo'] ?? 0) == 1 && $this->overlaps($id, $data['limite_inferior'], $data['limite_superior'])) {
-            throw new \RuntimeException('El rango se solapa con otra regla activa.');
-        }
+        $this->assertNoOverlap($data, $id);
 
         DB::table('reglas_asignacion')->where('id', $id)->update([
-            'limite_inferior'    => $data['limite_inferior'],
-            'limite_superior'    => $data['limite_superior'],
-            'monto_equivalencia' => $data['monto_equivalencia'],
             'descripcion'        => $data['descripcion'] ?? null,
-            'prioridad'          => $data['prioridad'],
-            'activo'             => $data['activo'] ?? 0,
+            'limite_inferior'    => $data['limite_inferior'],
+            'limite_superior'    => $data['limite_superior'] !== '' ? $data['limite_superior'] : null,
+            'monto_equivalencia' => $data['monto_equivalencia'],
+            'activo'             => !empty($data['activo']) ? 1 : 0,
+            'updated_at'         => now(),
         ]);
+    }
+
+    /** Útil para tests o para calcular “preview” de puntos desde PHP. */
+    public function calcularPuntos(float $monto): int
+    {
+        return (int) DB::table(DB::raw('DUAL'))
+            ->selectRaw('fn_calcular_puntos(?) as pts', [$monto])
+            ->value('pts') ?? 0;
     }
 
     public function eliminar(int $id): void
@@ -78,24 +131,6 @@ class ReglasAsignacionService
     }
 
     // ------------------- Utilitarios / Lógica de negocio -------------------
-
-    public function overlaps(?int $ignoreId, float $low, $highNullable): bool
-    {
-        $high = $highNullable; // null = +∞
-
-        $q = DB::table('reglas_asignacion')->where('activo', 1);
-        if ($ignoreId) $q->where('id', '<>', $ignoreId);
-
-        // (a,b] se solapa con (c,d] si a < d && c < b (con NULL como +∞)
-        return $q->where(function ($w) use ($low, $high) {
-            $w->where('limite_inferior', '<', $high ?? 9e18)
-              ->where(function ($y) use ($low) {
-                  $y->whereNull('limite_superior')
-                    ->orWhere('limite_superior', '>', $low);
-              });
-        })->exists();
-    }
-
     public function kpis(): array
     {
         $totales = (int) DB::table('reglas_asignacion')->count();

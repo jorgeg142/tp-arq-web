@@ -29,7 +29,6 @@
             <th class="text-left px-4 py-3">Rango de Monto</th>
             <th class="text-left px-4 py-3">Equivalencia</th>
             <th class="text-left px-4 py-3">Ratio</th>
-            <th class="text-left px-4 py-3">Prioridad</th>
             <th class="text-left px-4 py-3">Estado</th>
             <th class="text-left px-4 py-3">Acciones</th>
           </tr>
@@ -46,7 +45,6 @@
               <td class="px-4 py-3">
                 <span class="px-2 py-1 text-xs rounded-full border bg-blue-50 text-blue-700">{{ $r->ratio_x }}x</span>
               </td>
-              <td class="px-4 py-3">{{ $r->prioridad }}</td>
               <td class="px-4 py-3">
                 @if($r->activo)
                   <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700">Activo</span>

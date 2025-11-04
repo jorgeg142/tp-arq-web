@@ -89,17 +89,14 @@ class BolsasController extends Controller
 
     public function store(Request $request)
     {
-        $v = $request->validate([
+       $v = $request->validate([
             'cliente_id'           => ['required','integer','exists:clientes,id'],
             'fecha_asignacion'     => ['required','date'],
             'param_vencimiento_id' => ['nullable','integer','exists:param_vencimientos,id'],
             'fecha_caducidad'      => ['nullable','date'],
-            'puntaje_asignado'     => ['required','integer','min:0'],
-            'puntaje_utilizado'    => ['nullable','integer','min:0'],
-            'saldo_puntos'         => ['nullable','integer','min:0'],
-            'monto_operacion'      => ['nullable','numeric','min:0'],
+            'puntaje_asignado'     => ['nullable','integer','min:0'], 
+            'monto_operacion'      => ['required','numeric','min:0'],   // ← requerido para calcular
             'origen'               => ['nullable','string','max:100'],
-            'auto_por_monto'       => ['nullable','boolean'],
         ]);
 
         $this->svc->crear($v);
@@ -125,30 +122,29 @@ class BolsasController extends Controller
             'fecha_asignacion'     => ['required','date'],
             'param_vencimiento_id' => ['nullable','integer','exists:param_vencimientos,id'],
             'fecha_caducidad'      => ['nullable','date'],
-            'puntaje_asignado'     => ['required','integer','min:0'],
-            'puntaje_utilizado'    => ['required','integer','min:0'],
-            'saldo_puntos'         => ['required','integer','min:0'],
-            'monto_operacion'      => ['nullable','numeric','min:0'],
+            'monto_operacion'      => ['required','numeric','min:0'],   // ← requerido para calcular
             'origen'               => ['nullable','string','max:100'],
         ]);
-
-        // Coherencia: asignado = utilizado + saldo
-        if ($v['puntaje_asignado'] !== ($v['puntaje_utilizado'] + $v['saldo_puntos'])) {
-            return back()->withErrors(['puntaje_asignado' => 'Asignado debe ser igual a Usado + Saldo.'])->withInput();
-        }
 
         $this->svc->actualizar($id, $v);
         return redirect()->route('bolsas.index')->with('ok','Bolsa actualizada.');
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
-        // Evitar borrar si tuvo usos
         $usos = DB::table('uso_puntos_det')->where('bolsa_id',$id)->count();
+
         if ($usos > 0) {
-            return back()->withErrors(['del'=>"No se puede eliminar: la bolsa tiene usos asociados ({$usos})."]);
+            return redirect()
+                ->route('bolsas.index') // <- no back(), mandalo a la lista
+                ->withErrors(['del'=>"No se puede eliminar: la bolsa tiene usos asociados ({$usos})."]);
         }
+
         $this->svc->eliminar($id);
-        return back()->with('ok','Bolsa eliminada.');
+
+        return redirect()
+            ->route('bolsas.index') // <- así la vista puede leer el flash
+            ->with('ok','Bolsa eliminada.');
     }
+
 }

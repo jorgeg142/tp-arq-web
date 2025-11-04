@@ -76,20 +76,19 @@ class ReglasAsignacionController extends Controller
 
     private function validated(Request $request): array
     {
-        $data = $request->validate([
+        $v = $request->validate([
+            'descripcion'        => ['nullable','string','max:255'],
             'limite_inferior'    => ['required','numeric','min:0'],
-            'limite_superior'    => ['nullable','numeric','gt:limite_inferior'],
+            'limite_superior'    => ['nullable','numeric'], // null = global
             'monto_equivalencia' => ['required','numeric','gt:0'],
-            'descripcion'        => ['nullable','string','max:200'],
-            'prioridad'          => ['required','integer','min:1','max:100'],
-            'activo'             => ['nullable'],
+            'activo'             => ['nullable','boolean'],
         ]);
 
-        $data['activo'] = $request->boolean('activo') ? 1 : 0;
-        if ($data['limite_superior'] === null || $data['limite_superior'] === '') {
-            $data['limite_superior'] = null; // ∞
+        $v['activo'] = $request->boolean('activo') ? 1 : 0;
+        if ($v['limite_superior'] === null || $v['limite_superior'] === '') {
+            $$v['limite_superior'] = null; // ∞
         }
 
-        return $data;
+        return $v;
     }
 }

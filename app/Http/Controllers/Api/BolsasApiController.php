@@ -68,12 +68,10 @@ class BolsasApiController extends Controller
             'fecha_asignacion'     => ['required','date'],
             'param_vencimiento_id' => ['nullable','integer','exists:param_vencimientos,id'],
             'fecha_caducidad'      => ['nullable','date'],
-            'puntaje_asignado'     => ['required','integer','min:0'],
-            'puntaje_utilizado'    => ['nullable','integer','min:0'],
-            'saldo_puntos'         => ['nullable','integer','min:0'],
-            'monto_operacion'      => ['nullable','numeric','min:0'],
+            'puntaje_asignado'     => ['nullable','integer','min:0'],
+            'monto_operacion'      => ['required','numeric','min:0'],   // ← requerido para calcular
             'origen'               => ['nullable','string','max:100'],
-            'auto_por_monto'       => ['nullable','boolean'],
+            // 'auto_por_monto'     => ['nullable','boolean'],           // ← eliminar
         ]);
 
         $id = $this->svc->crear($v);

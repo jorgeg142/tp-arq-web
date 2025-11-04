@@ -32,14 +32,6 @@
     @error('monto_equivalencia') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
   </div>
 
-  <div>
-    <label class="block text-sm text-gray-600">Prioridad *</label>
-    <input type="number" name="prioridad" min="1" max="100" required
-           value="{{ old('prioridad', $r->prioridad ?? 10) }}"
-           class="w-full border rounded px-3 py-2">
-    @error('prioridad') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-  </div>
-
   <div class="md:col-span-2">
     <label class="inline-flex items-center gap-2">
       <input type="checkbox" name="activo" value="1" class="rounded"
