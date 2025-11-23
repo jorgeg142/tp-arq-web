@@ -180,6 +180,23 @@ class BolsasService
         ]);
     }
 
+    public function crearBonificacion(int $clienteId, int $puntos, string $fechaAsignacion, ?string $origen = null): int
+    {
+        $puntos = max(0, $puntos);
+
+        return (int) DB::table('bolsas_puntos')->insertGetId([
+            'cliente_id'           => $clienteId,
+            'fecha_asignacion'     => $fechaAsignacion,
+            'fecha_caducidad'      => null,
+            'puntaje_asignado'     => $puntos,
+            'puntaje_utilizado'    => 0,
+            'saldo_puntos'         => $puntos,
+            'monto_operacion'      => 0,
+            'origen'               => $origen ?? 'Bonificación',
+            'param_vencimiento_id' => null,
+        ]);
+    }
+
 
 
     public function actualizar(int $id, array $v): void

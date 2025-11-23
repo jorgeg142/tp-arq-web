@@ -41,6 +41,12 @@ class ClientesApiController extends Controller
     // POST /api/clientes
     public function store(Request $request)
     {
+        if ($request->filled('codigo_referente')) {
+            $request->merge(['codigo_referente' => trim($request->input('codigo_referente'))]);
+        } else {
+            $request->merge(['codigo_referente' => null]);
+        }
+
         // mismas reglas que tu helper 'validated' (create)
         $data = $request->validate([
             'nombre'           => ['required','string','max:100'],
@@ -52,10 +58,11 @@ class ClientesApiController extends Controller
             'telefono'         => ['nullable','string','max:50'],
             'fecha_nacimiento' => ['nullable','date'],
             'activo'           => ['nullable'],
+            'codigo_referente' => ['nullable','string','max:16','exists:clientes,codigo_referido'],
         ]);
         $data['activo'] = $request->boolean('activo') ? 1 : 0;
 
-        $id = $this->svc->crear($data);
+        $id = $this->svc->crear($data, $data['codigo_referente'] ?? null);
         return response()->json(['ok'=>true,'id'=>$id,'row'=>$this->svc->obtener($id)], 201);
     }
 

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\NivelesController;
 use App\Http\Controllers\ConceptosUsoController;
 use App\Http\Controllers\ReglasAsignacionController;
 use App\Http\Controllers\VencimientosController;
@@ -14,7 +15,11 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/clientes/segmentacion', [ClientesController::class, 'segmentacion'])->name('clientes.segmentacion');
+Route::get('/clientes/{id}/referidos', [ClientesController::class, 'referidos'])->name('clientes.referidos');
+Route::put('/clientes/{id}/referidos', [ClientesController::class, 'actualizarReferidos'])->name('clientes.referidos.update');
 Route::resource('clientes', ClientesController::class);
+Route::resource('niveles', NivelesController::class);
 
 Route::resource('conceptos-uso', ConceptosUsoController::class)
      ->names('conceptos');

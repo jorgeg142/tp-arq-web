@@ -24,7 +24,9 @@
            class="block px-5 py-2.5 rounded-md hover:bg-slate-800 {{ request()->is('dashboard') ? 'bg-slate-800' : '' }}">
           📊 Dashboard
         </a>
-        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('clientes.index') }}">👥 Gestión de Clientes</a>
+        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800 {{ request()->is('clientes*') && !request()->is('clientes/segmentacion') ? 'bg-slate-800' : '' }}" href="{{ route('clientes.index') }}">👥 Gestión de Clientes</a>
+        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800 {{ request()->is('clientes/segmentacion') ? 'bg-slate-800' : '' }}" href="{{ route('clientes.segmentacion') }}">🧩 Segmentación de Clientes</a>
+        <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800 {{ request()->is('niveles*') ? 'bg-slate-800' : '' }}" href="{{ route('niveles.index') }}">🏆 Niveles de Fidelización</a>
         <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('conceptos.index') }}">🎯 Conceptos de Puntos</a>
         <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('reglas.index') }}">⚙️ Reglas de Asignación</a>
         <a class="block px-5 py-2.5 rounded-md hover:bg-slate-800" href="{{ route('vencimientos.index') }}">📅 Vencimientos</a>

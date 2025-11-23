@@ -74,4 +74,35 @@
       <span class="text-sm text-gray-700">Activo</span>
     </label>
   </div>
+
+  @if(!isset($c))
+    <div class="md:col-span-2">
+      <label class="block text-sm text-gray-600">Código de referido (opcional)</label>
+      <input name="codigo_referente" type="text"
+             value="{{ old('codigo_referente') }}"
+             class="w-full border rounded px-3 py-2" placeholder="Ej: ABCD1234">
+      <p class="text-xs text-gray-500 mt-1">Si alguien te invitó, ingresá su código para que ambos reciban puntos.</p>
+      @error('codigo_referente') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+    </div>
+  @else
+    <div class="md:col-span-2 grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-gray-600">Tu código de referido</label>
+        <input type="text" readonly value="{{ $c->codigo_referido }}"
+               class="w-full border rounded px-3 py-2 bg-slate-50 text-gray-700">
+        <p class="text-xs text-gray-500 mt-1">Compartilo para que otros se registren y ganen puntos.</p>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600">Referido por</label>
+        @if(!empty($c->referido_por_nombre))
+          <div class="w-full border rounded px-3 py-2 bg-slate-50 text-gray-700 flex justify-between items-center">
+            <span>{{ $c->referido_por_nombre }}</span>
+            <span class="text-xs text-slate-500">({{ $c->referido_por_codigo }})</span>
+          </div>
+        @else
+          <input type="text" readonly value="—" class="w-full border rounded px-3 py-2 bg-slate-50 text-gray-500">
+        @endif
+      </div>
+    </div>
+  @endif
 </div>
